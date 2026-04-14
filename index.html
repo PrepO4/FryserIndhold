@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fryserlager">
+<meta name="theme-color" content="#1a1917">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Fryserlager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f6f3;--surface:#fff;--border:#e8e6e0;--border2:#d0cec7;--text:#1a1917;--text2:#6b6965;--text3:#a09e9a;--accent:#1a1917;--warn-bg:#fef3c7;--warn-border:#fcd34d;--warn-text:#92400e;--danger-bg:#fef2f2;--danger-border:#fca5a5;--danger-text:#991b1b;--success-bg:#f0fdf4;--success-border:#86efac;--success-text:#166534;--r:12px;--rs:8px}
+@media(prefers-color-scheme:dark){:root{--bg:#111110;--surface:#1c1c1a;--border:#2e2d2a;--border2:#3d3c38;--text:#e8e6e0;--text2:#8c8a85;--text3:#5c5a56;--accent:#e8e6e0;--warn-bg:#2d2200;--warn-border:#854d0e;--warn-text:#fde68a;--danger-bg:#200;--danger-border:#7f1d1d;--danger-text:#fca5a5;--success-bg:#052e16;--success-border:#166534;--success-text:#86efac}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:1.25rem 1rem 5rem}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem}
+.header h1{font-size:26px;font-weight:600;letter-spacing:-.5px}
+.sync-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);margin-top:4px}
+.dot{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.dot.spin{background:#facc15;animation:blink .8s infinite}
+.dot.err{background:#f87171}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.stat{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:12px}
+.stat-val{font-size:24px;font-weight:600;letter-spacing:-.5px}
+.stat-val.w{color:#d97706}.stat-val.d{color:#dc2626}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:2px}
+.add-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:1rem}
+.add-btn-big{width:100%;height:48px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--rs);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.add-btn-big:active{opacity:.8}
+.add-form{display:none;margin-top:10px;padding-top:10px;border-top:.5px solid var(--border);flex-direction:column;gap:10px}
+.add-form.open{display:flex}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.field input,.field select{width:100%;height:38px;border:.5px solid var(--border2);border-radius:var(--rs);padding:0 10px;font-family:inherit;font-size:14px;background:var(--bg);color:var(--text);outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.exp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-actions{display:flex;gap:8px}
+.save-btn{flex:1;height:42px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.save-btn:active{opacity:.8}
+.cancel-btn{height:42px;padding:0 16px;background:none;border:.5px solid var(--border2);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--text2);cursor:pointer}
+.filter-row{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fbtn{flex-shrink:0;border:.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text2);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.fbtn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.banner{border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+.bw{background:var(--warn-bg);border:.5px solid var(--warn-border);color:var(--warn-text)}
+.bd{background:var(--danger-bg);border:.5px solid var(--danger-border);color:var(--danger-text)}
+.items{display:flex;flex-direction:column;gap:6px}
+.item{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.item.soon{border-color:var(--warn-border)}.item.expired{border-color:var(--danger-border)}
+.item-ico{width:40px;height:40px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.item-body{flex:1;min-width:0}
+.item-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.item-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.qty-row{display:flex;align-items:center;gap:5px}
+.qbtn{width:24px;height:24px;border:.5px solid var(--border2);border-radius:6px;background:var(--bg);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qval{font-size:13px;font-weight:600;min-width:18px;text-align:center}
+.qunit{font-size:11px;color:var(--text3)}
+.pill{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.pill-ok{background:var(--success-bg);color:var(--success-text)}
+.pill-soon{background:var(--warn-bg);color:var(--warn-text)}
+.pill-exp{background:var(--danger-bg);color:var(--danger-text)}
+.empty{text-align:center;color:var(--text3);font-size:14px;padding:3rem 0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;transition:transform .3s;z-index:100;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r) var(--r) 0 0;padding:1.25rem 1rem 2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:1rem}
+.modal-actions{display:flex;gap:8px;margin-top:1rem}
+.modal-save{flex:1;height:42px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.modal-cancel{height:42px;padding:0 16px;background:none;border:.5px solid var(--border2);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--text2);cursor:pointer}
+.modal-delete{height:42px;padding:0 16px;background:none;border:.5px solid var(--danger-border);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--danger-text);cursor:pointer}
+.item-group>.item{border-radius:var(--r) var(--r) 0 0;border-bottom-color:transparent}
+.sub-entries{border:.5px solid var(--border);border-top:none;border-radius:0;overflow:hidden}
+.add-date-btn{width:100%;height:32px;background:none;border:.5px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);font-family:inherit;font-size:12px;color:var(--text3);cursor:pointer}
+.add-date-btn:active{background:var(--bg)}
+.sort-row{display:flex;align-items:center;gap:6px;margin-bottom:.6rem}
+.sort-lbl{font-size:12px;color:var(--text3);flex-shrink:0}
+.sbtn{border:.5px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text2);padding:4px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.sbtn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.sub-entry{display:flex;align-items:center;justify-content:space-between;padding:9px 14px 9px 64px;border-bottom:.5px solid var(--border);background:var(--surface);cursor:pointer}
+.sub-entry:last-child{border-bottom:none}.sub-entry:active{background:var(--bg)}
+.expand-arrow{font-size:10px;color:var(--text3);margin-left:4px}
+.sub-edit-btn{background:none;border:none;font-size:16px;padding:0 0 0 8px;cursor:pointer;flex-shrink:0;line-height:1}
+.item:active{opacity:.8}
+.search-row{margin-bottom:.75rem;position:relative}
+.search-input{width:100%;height:40px;border:.5px solid var(--border2);border-radius:var(--rs);padding:0 36px 0 12px;font-family:inherit;font-size:14px;background:var(--bg);color:var(--text);outline:none}
+.search-input:focus{border-color:var(--accent)}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:none}
+.qty-input-row{height:38px;border:.5px solid var(--border2);border-radius:var(--rs);padding:0 6px;background:var(--bg);display:flex;align-items:center;gap:4px}
+.qty-input-row input{border:none;background:transparent;width:36px;text-align:center;font-size:14px;font-family:inherit;color:var(--text);outline:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>❄️ Fryserlager</h1>
+      <div class="sync-row"><div class="dot spin" id="dot"></div><span id="sync-lbl">Indlæser...</span></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-total">–</div><div class="stat-lbl">Varer</div></div>
+    <div class="stat"><div class="stat-val w" id="s-soon">–</div><div class="stat-lbl">Udløber snart</div></div>
+    <div class="stat"><div class="stat-val d" id="s-exp">–</div><div class="stat-lbl">Udløbet</div></div>
+  </div>
+
+  <div class="add-card">
+    <button class="add-btn-big" onclick="toggleAddForm()">+ Tilføj vare</button>
+    <div class="add-form" id="add-form">
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1">
+          <label>Navn</label>
+          <input type="text" id="f-name" placeholder="f.eks. Hakkebøf" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Kategori</label>
+          <select id="f-cat">
+            <option value="koed">🥩 Kød</option>
+            <option value="fisk">🐟 Fisk/skaldyr</option>
+            <option value="mejeri">🥛 Mejeri</option>
+            <option value="groent">🥦 Grøntsager</option>
+            <option value="broed">🍞 Brød/Bagværk</option>
+            <option value="faerdig">🍲 Færdigretter</option>
+            <option value="is">🍦 Is/Dessert</option>
+            <option value="andet">📦 Andet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Antal</label>
+          <div class="qty-input-row">
+            <button class="qbtn" onclick="document.getElementById('f-qty').value=Math.max(1,+(document.getElementById('f-qty').value)-1)">−</button>
+            <input type="number" id="f-qty" min="1" value="1" />
+            <button class="qbtn" onclick="document.getElementById('f-qty').value=+(document.getElementById('f-qty').value)+1">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="exp-row">
+        <div class="field">
+          <label>Udløbsmåned</label>
+          <select id="f-exp-month">
+            <option value="01">Januar</option><option value="02">Februar</option>
+            <option value="03">Marts</option><option value="04">April</option>
+            <option value="05">Maj</option><option value="06">Juni</option>
+            <option value="07">Juli</option><option value="08">August</option>
+            <option value="09">September</option><option value="10">Oktober</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Udløbsår</label>
+          <select id="f-exp-year"></select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="save-btn" onclick="saveItem()">Gem i fryseren</button>
+        <button class="cancel-btn" onclick="closeForm()">Annuller</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <input class="search-input" id="search-input" type="search" placeholder="Søg vare..." oninput="setSearch(this.value)" autocomplete="off" />
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="sort-row">
+    <span class="sort-lbl">Sortér:</span>
+    <button class="sbtn active" onclick="setSort('default',this)">Senest</button>
+    <button class="sbtn" onclick="setSort('alpha',this)">A–Z</button>
+    <button class="sbtn" onclick="setSort('cat',this)">Kategori</button>
+    <button class="sbtn" onclick="setSort('exp',this)">Udløbsdato</button>
+  </div>
+  <div class="filter-row">
+    <button class="fbtn active" onclick="setFilter('all',this)">Alle</button>
+    <button class="fbtn" onclick="setFilter('soon',this)">Udløber snart</button>
+    <button class="fbtn" onclick="setFilter('expired',this)">Udløbet</button>
+    <button class="fbtn" onclick="setFilter('koed',this)">Kød</button>
+    <button class="fbtn" onclick="setFilter('fisk',this)">Fisk</button>
+    <button class="fbtn" onclick="setFilter('mejeri',this)">Mejeri</button>
+    <button class="fbtn" onclick="setFilter('groent',this)">Grøntsager</button>
+    <button class="fbtn" onclick="setFilter('broed',this)">Brød</button>
+    <button class="fbtn" onclick="setFilter('faerdig',this)">Færdigretter</button>
+    <button class="fbtn" onclick="setFilter('is',this)">Is</button>
+  </div>
+
+  <div id="banners"></div>
+  <div class="items" id="items-list"><div class="empty">Indlæser...</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Rediger modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">Rediger vare</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1">
+          <label>Navn</label>
+          <input type="text" id="e-name" />
+        </div>
+        <div class="field">
+          <label>Kategori</label>
+          <select id="e-cat">
+            <option value="koed">🥩 Kød</option>
+            <option value="fisk">🐟 Fisk/skaldyr</option>
+            <option value="mejeri">🥛 Mejeri</option>
+            <option value="groent">🥦 Grøntsager</option>
+            <option value="broed">🍞 Brød/Bagværk</option>
+            <option value="faerdig">🍲 Færdigretter</option>
+            <option value="is">🍦 Is/Dessert</option>
+            <option value="andet">📦 Andet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Antal</label>
+          <input type="number" id="e-qty" min="0" />
+        </div>
+        <div class="field">
+          <label>Udløbsmåned</label>
+          <select id="e-exp-month">
+            <option value="01">Januar</option><option value="02">Februar</option>
+            <option value="03">Marts</option><option value="04">April</option>
+            <option value="05">Maj</option><option value="06">Juni</option>
+            <option value="07">Juli</option><option value="08">August</option>
+            <option value="09">September</option><option value="10">Oktober</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Udløbsår</label>
+          <select id="e-exp-year"></select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete" onclick="deleteEditItem()">Slet</button>
+        <button class="modal-cancel" onclick="closeEditModal()">Annuller</button>
+        <button class="modal-save" onclick="saveEditItem()">Gem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BIN_KEY = '$2a$10$7mS4BGLl5vz4LSSfIaylCu3zwYJ3qRL5ZWtnTyuFsXu1mIpLabzMG';
+const BASE = 'https://api.jsonbin.io/v3';
+const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',broed:'🍞',faerdig:'🍲',is:'🍦',andet:'📦'};
+const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+
+let items = [], filter = 'all', sortBy = 'default', searchQuery = '';
+let itemsBinId = localStorage.getItem('fryser_items_bin') || null;
+
+// År-valgmuligheder
+(function(){
+  ['f-exp-year','e-exp-year'].forEach(id => {
+    const sel = document.getElementById(id);
+    const y = new Date().getFullYear();
+    for(let i=0;i<10;i++){const o=document.createElement('option');o.value=y+i;o.textContent=y+i;sel.appendChild(o);}
+  });
+  document.getElementById('f-exp-month').value = String(new Date().getMonth()+1).padStart(2,'0');
+})();
+
+// JSONBin API
+const HEADERS = {'X-Master-Key': BIN_KEY, 'Content-Type': 'application/json'};
+async function binGet(id) {
+  const r = await fetch(`${BASE}/b/${id}/latest`, {headers:{'X-Master-Key':BIN_KEY}});
+  if(!r.ok) throw new Error(r.status);
+  const d = await r.json();
+  return Array.isArray(d.record) ? d.record : (d.record.items || []);
+}
+async function binCreate(data, name) {
+  const r = await fetch(`${BASE}/b`, {method:'POST',headers:{...HEADERS,'X-Bin-Name':name,'X-Bin-Private':'false'},body:JSON.stringify(data)});
+  if(!r.ok) { const e = await r.text(); throw new Error(r.status+': '+e); }
+  const d = await r.json();
+  return d.metadata.id;
+}
+async function binUpdate(id, data) {
+  const body = Array.isArray(data) ? {items: data} : data;
+  const r = await fetch(`${BASE}/b/${id}`, {method:'PUT',headers:HEADERS,body:JSON.stringify(body)});
+  if(!r.ok) { const e = await r.text(); throw new Error(r.status+': '+e); }
+}
+
+// Indlæs data
+async function loadAll() {
+  setSyncing(true);
+  try {
+    if(itemsBinId) {
+      items = await binGet(itemsBinId);
+    } else {
+      items = [];
+    }
+    setSynced();
+  } catch(e) { setError('Fejl: '+e.message); console.error(e); }
+  render();
+}
+
+// Tilføj formular
+function toggleAddForm() {
+  const form = document.getElementById('add-form');
+  if(form.classList.contains('open')) {
+    closeForm();
+  } else {
+    document.getElementById('f-name').value='';
+    document.getElementById('f-cat').value='koed';
+    document.getElementById('f-qty').value=1;
+    document.getElementById('f-exp-month').value=String(new Date().getMonth()+1).padStart(2,'0');
+    form.classList.add('open');
+    setTimeout(()=>document.getElementById('f-name').focus(),100);
+  }
+}
+function closeForm() {
+  document.getElementById('add-form').classList.remove('open');
+}
+
+async function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){showToast('Angiv et navn');return;}
+  const month = document.getElementById('f-exp-month').value;
+  const year = document.getElementById('f-exp-year').value;
+  const item = {
+    id: 'i'+Date.now(),
+    name,
+    cat: document.getElementById('f-cat').value,
+    qty: parseInt(document.getElementById('f-qty').value)||1,
+    exp: `${year}-${month}-01`,
+    expLabel: `${MONTHS[parseInt(month)-1]} ${year}`,
+    created: new Date().toISOString(),
+  };
+  // Samme navn + kategori + udløb → +1 på eksisterende
+  const same = items.find(i => i.name.toLowerCase()===name.toLowerCase() && i.cat===item.cat && i.exp===item.exp);
+  if(same) {
+    same.qty += item.qty;
+    closeForm();
+    render();
+    setSyncing(true);
+    try { await persistItems(); setSynced(); showToast(same.name+' +'+item.qty+' ✓'); } catch(e){setError('Gem fejlede');}
+    return;
+  }
+  closeForm();
+  items.unshift(item);
+  render();
+  setSyncing(true);
+  try { await persistItems(); setSynced(); showToast('Gemt ❄️'); } catch(e){ setError('Gem fejlede'); }
+}
+
+async function persistItems() {
+  if(!itemsBinId) {
+    itemsBinId = await binCreate({items: items}, 'FryserApp');
+    localStorage.setItem('fryser_items_bin', itemsBinId);
+  } else {
+    await binUpdate(itemsBinId, items);
+  }
+}
+
+async function updateQty(id, delta) {
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  item.qty = Math.max(0, item.qty+delta);
+  if(item.qty===0) items = items.filter(i=>i.id!==id);
+  render();
+  setSyncing(true);
+  try { await persistItems(); setSynced(); }
+  catch(e) { setError('Opdatering fejlede'); }
+}
+
+async function deleteItem(id) {
+  items = items.filter(i=>i.id!==id);
+  render();
+  setSyncing(true);
+  try { await persistItems(); setSynced(); showToast('Slettet'); }
+  catch(e) { setError('Sletning fejlede'); }
+}
+
+// Sync-status
+function setSyncing(v){document.getElementById('dot').className='dot'+(v?' spin':'');document.getElementById('sync-lbl').textContent=v?'Gemmer...':'Synkroniseret ☁';}
+function setSynced(){setSyncing(false);}
+function setError(m){document.getElementById('dot').className='dot err';document.getElementById('sync-lbl').textContent=m;}
+
+function daysUntil(d){if(!d)return 9999;return Math.ceil((new Date(d)-new Date())/86400000);}
+function expStatus(i){const d=daysUntil(i.exp);return d<0?'expired':d<=30?'soon':'ok';}
+
+function setFilter(f,el){filter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+function setSort(s,el){sortBy=s;document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+function setSearch(val){searchQuery=val.trim().toLowerCase();document.getElementById('search-clear').style.display=searchQuery?'block':'none';render();}
+function clearSearch(){searchQuery='';document.getElementById('search-input').value='';document.getElementById('search-clear').style.display='none';render();}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+const openGroups = new Set();
+function toggleGroup(key) {
+  if(openGroups.has(key)) openGroups.delete(key); else openGroups.add(key);
+  render();
+}
+
+function makePill(st, entry) {
+  if(!entry.exp) return '';
+  if(st==='expired') return `<span class="pill pill-exp">Udløbet</span>`;
+  if(st==='soon') return `<span class="pill pill-soon">${entry.expLabel||entry.exp}</span>`;
+  return `<span class="pill pill-ok">${entry.expLabel||entry.exp}</span>`;
+}
+
+function render(){
+  const soon=items.filter(i=>expStatus(i)==='soon').length;
+  const expired=items.filter(i=>expStatus(i)==='expired').length;
+  const groupMap={};
+  items.forEach(item=>{
+    const key=item.name.toLowerCase()+'|'+item.cat;
+    if(!groupMap[key]) groupMap[key]={name:item.name,cat:item.cat,entries:[]};
+    groupMap[key].entries.push(item);
+  });
+  const allGroups=Object.values(groupMap);
+  document.getElementById('s-total').textContent=allGroups.length;
+  document.getElementById('s-soon').textContent=soon;
+  document.getElementById('s-exp').textContent=expired;
+  let banners='';
+  if(soon>0) banners+=`<div class="banner bw">⚠ ${soon} vare${soon>1?'r':''} udløber inden for 30 dage</div>`;
+  if(expired>0) banners+=`<div class="banner bd">✕ ${expired} udløbet vare${expired>1?'r':''}</div>`;
+  document.getElementById('banners').innerHTML=banners;
+  let groups=allGroups;
+  if(filter==='soon') groups=allGroups.filter(g=>g.entries.some(i=>expStatus(i)==='soon'));
+  else if(filter==='expired') groups=allGroups.filter(g=>g.entries.some(i=>expStatus(i)==='expired'));
+  else if(filter!=='all') groups=allGroups.filter(g=>g.cat===filter);
+  if(searchQuery) groups=groups.filter(g=>g.name.toLowerCase().includes(searchQuery));
+  if(sortBy==='alpha') groups=[...groups].sort((a,b)=>a.name.localeCompare(b.name,'da'));
+  else if(sortBy==='cat') groups=[...groups].sort((a,b)=>a.cat.localeCompare(b.cat)||(a.name.localeCompare(b.name,'da')));
+  else if(sortBy==='exp') groups=[...groups].sort((a,b)=>{
+    const aExp=Math.min(...a.entries.map(i=>daysUntil(i.exp)));
+    const bExp=Math.min(...b.entries.map(i=>daysUntil(i.exp)));
+    return aExp-bExp;
+  });
+  const list=document.getElementById('items-list');
+  if(!groups.length){list.innerHTML='<div class="empty">Ingen varer her endnu.</div>';return;}
+  list.innerHTML=groups.map(g=>{
+    const totalQty=g.entries.reduce((s,i)=>s+i.qty,0);
+    const worstSt=g.entries.some(i=>expStatus(i)==='expired')?'expired':g.entries.some(i=>expStatus(i)==='soon')?'soon':'ok';
+    const multi=g.entries.length>1;
+    const isOpen=openGroups.has(g.name.toLowerCase()+'|'+g.cat);
+    const first=g.entries[0];
+    const worstEntry=g.entries.find(i=>expStatus(i)===worstSt)||first;
+    const pill=makePill(worstSt,worstEntry);
+    const groupKey=(g.name+'|'+g.cat).toLowerCase().replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const headerClick=multi?`toggleGroup('${groupKey}')`:`openEditModal('${first.id}')`;
+    const qtyCtrl=multi
+      ?`<div class="qty-row"><span class="qval">${totalQty}</span><span class="qunit">stk</span><span class="expand-arrow">${isOpen?'▲':'▼'}</span></div>`
+      :`<div class="qty-row" onclick="event.stopPropagation()"><button class="qbtn" onclick="updateQty('${first.id}',-1)">−</button><span class="qval">${totalQty}</span><span class="qunit">stk</span><button class="qbtn" onclick="updateQty('${first.id}',1)">+</button></div>`;
+    const subHtml=multi&&isOpen?`<div class="sub-entries">`+g.entries.map(item=>{
+      const st=expStatus(item);
+      const p=item.exp?makePill(st,item):`<span style="font-size:12px;color:var(--text3)">Ingen dato</span>`;
+      return `<div class="sub-entry">${p}<div class="qty-row"><button class="qbtn" onclick="updateQty('${item.id}',-1)">−</button><span class="qval">${item.qty}</span><span class="qunit">stk</span><button class="qbtn" onclick="updateQty('${item.id}',1)">+</button></div><button class="sub-edit-btn" onclick="openEditModal('${item.id}')">✏️</button></div>`;
+    }).join('')+`</div>`:'';
+    const nameEsc=g.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="item-group${isOpen?' grp-open':''}"><div class="item ${worstSt!=='ok'?worstSt:''}" onclick="${headerClick}"><div class="item-ico">${EMOJIS[g.cat]||'📦'}</div><div class="item-body"><div class="item-name">${g.name}</div><div class="item-sub">${EMOJIS[g.cat]||''} ${catLabel(g.cat)}</div></div><div class="item-right">${qtyCtrl}${pill}</div></div>${subHtml}<button class="add-date-btn" onclick="event.stopPropagation();openAddForExisting('${nameEsc}','${g.cat}')">+ Tilføj med anden udløbsdato</button></div>`;
+  }).join('');
+}
+
+function catLabel(cat){
+  const labels={koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',broed:'Brød/Bagværk',faerdig:'Færdigretter',is:'Is/Dessert',andet:'Andet'};
+  return labels[cat]||cat;
+}
+
+function openAddForExisting(name, cat) {
+  document.getElementById('f-name').value=name;
+  document.getElementById('f-cat').value=cat;
+  document.getElementById('f-qty').value=1;
+  document.getElementById('f-exp-month').value=String(new Date().getMonth()+1).padStart(2,'0');
+  document.getElementById('add-form').classList.add('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>document.getElementById('f-exp-month').focus(),300);
+}
+
+// Redigeringsmodal
+(function(){
+  const sel = document.getElementById('e-exp-year');
+  const y = new Date().getFullYear();
+  for(let i=0;i<10;i++){const o=document.createElement('option');o.value=y+i;o.textContent=y+i;sel.appendChild(o);}
+})();
+
+let editingId = null;
+function openEditModal(id) {
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  editingId = id;
+  document.getElementById('e-name').value = item.name;
+  document.getElementById('e-cat').value = item.cat;
+  document.getElementById('e-qty').value = item.qty;
+  if(item.exp) {
+    const parts = item.exp.split('-');
+    document.getElementById('e-exp-month').value = parts[1];
+    document.getElementById('e-exp-year').value = parts[0];
+  }
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+async function saveEditItem() {
+  const item = items.find(i=>i.id===editingId);
+  if(!item) return;
+  const month = document.getElementById('e-exp-month').value;
+  const year = document.getElementById('e-exp-year').value;
+  item.name = document.getElementById('e-name').value.trim();
+  item.cat = document.getElementById('e-cat').value;
+  item.qty = parseInt(document.getElementById('e-qty').value)||0;
+  item.exp = year+'-'+month+'-01';
+  item.expLabel = MONTHS[parseInt(month)-1]+' '+year;
+  if(item.qty <= 0) { await deleteItem(item.id); closeEditModal(); return; }
+  closeEditModal();
+  render();
+  setSyncing(true);
+  try { await persistItems(); setSynced(); showToast('Ændringer gemt'); }
+  catch(e) { setError('Gem fejlede'); }
+}
+async function deleteEditItem() {
+  if(!editingId) return;
+  closeEditModal();
+  await deleteItem(editingId);
+}
+
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if(e.target === document.getElementById('edit-modal')) closeEditModal();
+});
+
+loadAll();
+</script>
+</body>
+</html>

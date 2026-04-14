@@ -1,0 +1,18 @@
+{
+  "name": "Fryserlager",
+  "short_name": "Fryserlager",
+  "description": "Lagerstyring til fryseren",
+  "start_url": "/FryserIndhold/",
+  "display": "standalone",
+  "background_color": "#1a1917",
+  "theme_color": "#1a1917",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
