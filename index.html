@@ -297,7 +297,7 @@ async function binGet(id) {
   return Array.isArray(d.record) ? d.record : (d.record.items || []);
 }
 async function binCreate(data, name) {
-  const r = await fetch(`${BASE}/b`, {method:'POST',headers:{...HEADERS,'X-Bin-Name':name,'X-Bin-Private':'false'},body:JSON.stringify(data)});
+  const r = await fetch(`${BASE}/b`, {method:'POST',headers:{...HEADERS,'X-Bin-Name':name},body:JSON.stringify(data)});
   if(!r.ok) { const e = await r.text(); throw new Error(r.status+': '+e); }
   return (await r.json()).metadata.id;
 }
