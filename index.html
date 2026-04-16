@@ -106,6 +106,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <h1>❄️ Fryserlager</h1>
       <div class="sync-row"><div class="dot spin" id="dot"></div><span id="sync-lbl">Indlæser...</span></div>
     </div>
+    <button onclick="shareApp()" style="background:none;border:.5px solid var(--border2);border-radius:var(--rs);padding:6px 12px;font-family:inherit;font-size:13px;color:var(--text2);cursor:pointer;margin-top:4px">Del app</button>
   </div>
 
   <div class="stats">
@@ -265,6 +266,10 @@ const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',broed:'🍞'
 const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
 
 let items = [], filter = 'all', sortBy = 'default', searchQuery = '';
+
+// Bin-ID: prioritér URL-parameter → localStorage
+const _urlBin = new URLSearchParams(window.location.search).get('bin');
+if(_urlBin) localStorage.setItem('fryser_items_bin', _urlBin);
 let itemsBinId = localStorage.getItem('fryser_items_bin') || null;
 
 // Udfyld år-selects med nuværende år og 2 år bagud + 1 år frem
@@ -356,8 +361,18 @@ async function persistItems() {
   if(!itemsBinId) {
     itemsBinId = await binCreate({items}, 'FryserApp');
     localStorage.setItem('fryser_items_bin', itemsBinId);
+    history.replaceState(null, '', '?bin='+itemsBinId);
   } else {
     await binUpdate(itemsBinId, items);
+  }
+}
+
+function shareApp() {
+  const url = location.origin + location.pathname + (itemsBinId ? '?bin='+itemsBinId : '');
+  if(navigator.share) {
+    navigator.share({title:'Fryserlager', url});
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('Link kopieret ✓'));
   }
 }
 
