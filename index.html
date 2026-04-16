@@ -97,6 +97,21 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:none}
 .qty-input-row{height:38px;border:.5px solid var(--border2);border-radius:var(--rs);padding:0 6px;background:var(--bg);display:flex;align-items:center;gap:4px}
 .qty-input-row input{border:none;background:transparent;width:36px;text-align:center;font-size:14px;font-family:inherit;color:var(--text);outline:none}
+.cam-btns{display:flex;gap:8px}
+.cam-btn-big{flex:1;height:48px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--rs);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.cam-btn-big:active{opacity:.8}
+.manual-btn{flex:0 0 auto;height:48px;padding:0 14px;background:none;border:.5px solid var(--border2);border-radius:var(--rs);font-family:inherit;font-size:14px;color:var(--text2);cursor:pointer}
+.manual-btn:active{opacity:.8}
+#video-wrap{display:none;margin-top:8px;position:relative;border-radius:var(--rs);overflow:hidden;max-height:260px}
+#cam-video{width:100%;display:block;max-height:260px;object-fit:cover}
+.capture-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center}
+.stop-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+#preview-wrap{display:none;margin-top:8px}
+#preview-img{width:100%;border-radius:var(--rs);max-height:160px;object-fit:cover}
+.analyzing{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:13px;color:var(--text2)}
+.spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.retry-btn{width:100%;height:36px;background:none;border:.5px solid var(--border2);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--text2);cursor:pointer}
 </style>
 </head>
 <body>
@@ -115,7 +130,20 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
 
   <div class="add-card">
-    <button class="add-btn-big" onclick="toggleAddForm()">+ Tilføj vare</button>
+    <div class="cam-btns">
+      <button class="cam-btn-big" onclick="startCamera()">📷 Tag billede</button>
+      <button class="manual-btn" onclick="openManualForm()">Manuelt</button>
+    </div>
+    <div id="video-wrap">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <button class="capture-btn" onclick="capturePhoto()">📸</button>
+      <button class="stop-btn" onclick="stopCamera()">Annuller</button>
+    </div>
+    <div id="preview-wrap">
+      <img id="preview-img" />
+      <div class="analyzing" id="analyzing-row" style="display:none">
+        <div class="spinner"></div><span>Analyserer produkt...</span>
+      </div>
     <div class="add-form" id="add-form">
       <div class="form-grid">
         <div class="field" style="grid-column:1/-1">
@@ -170,6 +198,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <button class="save-btn" onclick="saveItem()">Læg i fryseren</button>
         <button class="cancel-btn" onclick="closeForm()">Annuller</button>
       </div>
+    </div>
     </div>
   </div>
 
@@ -268,6 +297,7 @@ const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',broed:'🍞'
 const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
 
 let items = [], filter = 'all', sortBy = 'default', searchQuery = '';
+let camStream = null, capturedB64 = null;
 const itemsBinId = '69e09d1f856a6821893d2c64';
 
 // Udfyld år-selects med nuværende år og 2 år bagud + 1 år frem
@@ -313,23 +343,98 @@ async function loadAll() {
   render();
 }
 
-// Tilføj-formular
-function toggleAddForm() {
-  const form = document.getElementById('add-form');
-  if(form.classList.contains('open')) { closeForm(); return; }
+// Kamera
+function startCamera() {
+  resetForm();
+  capturedB64 = null;
+  document.getElementById('video-wrap').style.display = 'block';
+  document.getElementById('preview-wrap').style.display = 'none';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
+    .then(s => { camStream = s; document.getElementById('cam-video').srcObject = s; })
+    .catch(() => { document.getElementById('video-wrap').style.display='none'; showToast('Kamera ikke tilgængeligt'); });
+}
+function stopCamera() {
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  document.getElementById('video-wrap').style.display = 'none';
+}
+function capturePhoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  stopCamera();
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  capturedB64 = dataUrl.split(',')[1];
+  document.getElementById('preview-img').src = dataUrl;
+  document.getElementById('preview-wrap').style.display = 'block';
+  analyzeImage(capturedB64);
+}
+async function analyzeImage(b64) {
+  const row = document.getElementById('analyzing-row');
+  row.style.display = 'flex';
+  try {
+    const res = await fetch('https://preplager-ai.lone-988.workers.dev', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({image:b64})
+    });
+    if(!res.ok) throw new Error('Worker '+res.status);
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    let result;
+    try { result = JSON.parse(text.replace(/```json|```/g,'').trim()); }
+    catch { const m=text.match(/\{[\s\S]*?\}/); result = m ? JSON.parse(m[0]) : {}; }
+    row.style.display = 'none';
+    if(result.name) document.getElementById('f-name').value = result.name;
+    if(result.size) document.getElementById('f-size').value = result.size;
+    document.getElementById('f-cat').value = guessCat(result.name||'', result.cat||'');
+    document.getElementById('add-form').classList.add('open');
+    if(!result.name) showToast('Kunne ikke genkende — udfyld manuelt');
+  } catch(e) {
+    row.style.display = 'none';
+    document.getElementById('add-form').classList.add('open');
+    showToast('AI utilgængelig — udfyld manuelt');
+  }
+}
+function guessCat(name, aiCat) {
+  const n = name.toLowerCase();
+  if(/kylling|bøf|kød|hakke|pølse|flæsk|svin|lam|and|kalv|bacon|ribeye|steak|kotelette/.test(n)) return 'koed';
+  if(/fisk|laks|torsk|tun|reje|skaldyr|hummer|krab|makrel|sild/.test(n)) return 'fisk';
+  if(/mælk|fløde|smør|ost|yoghurt|skyr/.test(n)) return 'mejeri';
+  if(/grønt|spinat|ært|bønne|broccoli|blomkål|gulerod|løg|kartoffel|majs/.test(n)) return 'groent';
+  if(/brød|bolle|bagel|croissant|rugbrød/.test(n)) return 'broed';
+  if(/is |is$|flødeis|sorbet|dessert/.test(n)) return 'is';
+  if(/sauce|fond|suppe|bouillon|marinade/.test(n)) return 'sauce';
+  if(/ret|lasagne|pizza|gratin|færdig/.test(n)) return 'faerdig';
+  // Forsøg med AI-kategori som fallback
+  const map = {koed:'koed',fisk:'fisk',mejeri:'mejeri',groent:'groent',broed:'broed',sauce:'sauce',is:'is',faerdig:'faerdig',paaleg:'koed',konserves:'faerdig',mel:'broed',olie:'sauce',drikke:'andet'};
+  return map[aiCat] || 'andet';
+}
+
+function resetForm() {
   document.getElementById('f-name').value = '';
   document.getElementById('f-size').value = '';
   document.getElementById('f-cat').value = 'koed';
   document.getElementById('f-qty').value = 1;
-  const curMonth = String(new Date().getMonth()+1).padStart(2,'0');
-  const curYear = new Date().getFullYear();
-  document.getElementById('f-frozen-month').value = curMonth;
-  document.getElementById('f-frozen-year').value = curYear;
-  form.classList.add('open');
+  document.getElementById('f-frozen-month').value = String(new Date().getMonth()+1).padStart(2,'0');
+  document.getElementById('f-frozen-year').value = new Date().getFullYear();
+  document.getElementById('add-form').classList.remove('open');
+}
+function openManualForm(name='', size='', cat='koed') {
+  stopCamera();
+  capturedB64 = null;
+  document.getElementById('preview-img').src = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  resetForm();
+  document.getElementById('f-name').value = name;
+  document.getElementById('f-size').value = size;
+  document.getElementById('f-cat').value = cat;
+  document.getElementById('add-form').classList.add('open');
   setTimeout(() => document.getElementById('f-name').focus(), 100);
 }
 function closeForm() {
+  stopCamera();
   document.getElementById('add-form').classList.remove('open');
+  document.getElementById('preview-wrap').style.display = 'none';
+  capturedB64 = null;
 }
 
 async function saveItem() {
@@ -480,13 +585,7 @@ function catLabel(cat){
   return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
 }
 function openAddForExisting(name, size, cat) {
-  document.getElementById('f-name').value = name;
-  document.getElementById('f-size').value = size || '';
-  document.getElementById('f-cat').value = cat;
-  document.getElementById('f-qty').value = 1;
-  document.getElementById('f-frozen-month').value = String(new Date().getMonth()+1).padStart(2,'0');
-  document.getElementById('f-frozen-year').value = new Date().getFullYear();
-  document.getElementById('add-form').classList.add('open');
+  openManualForm(name, size, cat);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
