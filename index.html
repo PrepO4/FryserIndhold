@@ -354,7 +354,7 @@ async function saveItem() {
   render();
   setSyncing(true);
   try { await persistItems(); setSynced(); showToast('Lagt i fryseren ❄️'); }
-  catch(e) { setError('Gem fejlede'); }
+  catch(e) { console.error('saveItem fejl:', e); setError(e.message||'Gem fejlede'); }
 }
 
 async function persistItems() {
@@ -543,7 +543,7 @@ async function saveEditItem() {
   render();
   setSyncing(true);
   try { await persistItems(); setSynced(); showToast('Ændringer gemt'); }
-  catch(e) { setError('Gem fejlede'); }
+  catch(e) { console.error('saveEditItem fejl:', e); setError(e.message||'Gem fejlede'); }
 }
 async function deleteEditItem() {
   if(!editingId) return;
