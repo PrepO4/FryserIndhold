@@ -161,6 +161,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
             <option value="groent">🥦 Grøntsager</option>
+            <option value="baer">🍓 Bær</option>
             <option value="broed">🍞 Brød/Bagværk</option>
             <option value="faerdig">🍲 Færdigretter</option>
             <option value="sauce">🫙 Sauce/fond</option>
@@ -221,6 +222,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="fbtn" onclick="setFilter('fisk',this)">Fisk</button>
     <button class="fbtn" onclick="setFilter('mejeri',this)">Mejeri</button>
     <button class="fbtn" onclick="setFilter('groent',this)">Grøntsager</button>
+    <button class="fbtn" onclick="setFilter('baer',this)">Bær</button>
     <button class="fbtn" onclick="setFilter('broed',this)">Brød</button>
     <button class="fbtn" onclick="setFilter('faerdig',this)">Færdigretter</button>
     <button class="fbtn" onclick="setFilter('sauce',this)">Sauce/fond</button>
@@ -254,6 +256,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
             <option value="groent">🥦 Grøntsager</option>
+            <option value="baer">🍓 Bær</option>
             <option value="broed">🍞 Brød/Bagværk</option>
             <option value="faerdig">🍲 Færdigretter</option>
             <option value="sauce">🫙 Sauce/fond</option>
@@ -293,7 +296,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 <script>
 const BIN_KEY = '$2a$10$7mS4BGLl5vz4LSSfIaylCu3zwYJ3qRL5ZWtnTyuFsXu1mIpLabzMG';
 const BASE = 'https://api.jsonbin.io/v3';
-const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',broed:'🍞',faerdig:'🍲',sauce:'🫙',is:'🍦',andet:'📦'};
+const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',baer:'🍓',broed:'🍞',faerdig:'🍲',sauce:'🫙',is:'🍦',andet:'📦'};
 const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
 
 let items = [], filter = 'all', sortBy = 'default', searchQuery = '';
@@ -584,7 +587,7 @@ function render() {
 }
 
 function catLabel(cat){
-  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
+  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',baer:'Bær',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
 }
 function openAddForExisting(name, size, cat) {
   openManualForm(name, size, cat);
