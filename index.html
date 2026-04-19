@@ -97,6 +97,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:none}
 .qty-input-row{height:38px;border:.5px solid var(--border2);border-radius:var(--rs);padding:0 6px;background:var(--bg);display:flex;align-items:center;gap:4px}
 .qty-input-row input{border:none;background:transparent;width:36px;text-align:center;font-size:14px;font-family:inherit;color:var(--text);outline:none}
+.item-note{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cam-btns{display:flex;gap:8px}
 .cam-btn-big{flex:1;height:48px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--rs);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .cam-btn-big:active{opacity:.8}
@@ -195,6 +196,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <select id="f-frozen-year"></select>
         </div>
       </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Kommentar</label>
+        <input type="text" id="f-note" placeholder="Valgfri bemærkning..." autocomplete="off" />
+      </div>
       <div class="form-actions">
         <button class="save-btn" onclick="saveItem()">Læg i fryseren</button>
         <button class="cancel-btn" onclick="closeForm()">Annuller</button>
@@ -283,6 +288,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <label>Nedfryst år</label>
           <select id="e-frozen-year"></select>
         </div>
+      </div>
+      <div class="field">
+        <label>Kommentar</label>
+        <input type="text" id="e-note" placeholder="Valgfri bemærkning..." />
       </div>
       <div class="modal-actions">
         <button class="modal-delete" onclick="deleteEditItem()">Slet</button>
@@ -415,6 +424,7 @@ function guessCat(name, aiCat) {
 function resetForm() {
   document.getElementById('f-name').value = '';
   document.getElementById('f-size').value = '';
+  document.getElementById('f-note').value = '';
   document.getElementById('f-cat').value = 'koed';
   document.getElementById('f-qty').value = 1;
   document.getElementById('f-frozen-month').value = String(new Date().getMonth()+1).padStart(2,'0');
@@ -451,6 +461,7 @@ async function saveItem() {
     id: 'i'+Date.now(),
     name,
     size: document.getElementById('f-size').value.trim(),
+    note: document.getElementById('f-note').value.trim(),
     cat: document.getElementById('f-cat').value,
     qty: parseInt(document.getElementById('f-qty').value)||1,
     frozen: `${year}-${month}-01`,
@@ -528,7 +539,7 @@ function render() {
   const groupMap = {};
   items.forEach(item => {
     const key = item.name.toLowerCase()+'|'+item.cat+'|'+(item.size||'').toLowerCase();
-    if(!groupMap[key]) groupMap[key] = {name:item.name, cat:item.cat, size:item.size||'', entries:[]};
+    if(!groupMap[key]) groupMap[key] = {name:item.name, cat:item.cat, size:item.size||'', note:item.note||'', entries:[]};
     groupMap[key].entries.push(item);
   });
 
@@ -582,7 +593,7 @@ function render() {
       : '';
     const nameEsc = g.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const sizeEsc = (g.size||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<div class="item-group${isOpen?' grp-open':''}"><div class="item ${worstSt!=='ok'?worstSt:''}" onclick="${headerClick}"><div class="item-ico">${EMOJIS[g.cat]||'📦'}</div><div class="item-body"><div class="item-name">${g.name}</div><div class="item-sub">${g.size ? g.size+' · ' : ''}${catLabel(g.cat)}</div></div><div class="item-right">${qtyCtrl}${pill}</div></div>${subHtml}<button class="add-date-btn" onclick="event.stopPropagation();openAddForExisting('${nameEsc}','${sizeEsc}','${g.cat}')">+ Tilføj nyt parti</button></div>`;
+    return `<div class="item-group${isOpen?' grp-open':''}"><div class="item ${worstSt!=='ok'?worstSt:''}" onclick="${headerClick}"><div class="item-ico">${EMOJIS[g.cat]||'📦'}</div><div class="item-body"><div class="item-name">${g.name}</div><div class="item-sub">${g.size ? g.size+' · ' : ''}${catLabel(g.cat)}</div>${g.note ? `<div class="item-note">${g.note}</div>` : ''}</div><div class="item-right">${qtyCtrl}${pill}</div></div>${subHtml}<button class="add-date-btn" onclick="event.stopPropagation();openAddForExisting('${nameEsc}','${sizeEsc}','${g.cat}')">+ Tilføj nyt parti</button></div>`;
   }).join('');
 }
 
@@ -602,6 +613,7 @@ function openEditModal(id) {
   editingId = id;
   document.getElementById('e-name').value  = item.name;
   document.getElementById('e-size').value  = item.size || '';
+  document.getElementById('e-note').value  = item.note || '';
   document.getElementById('e-cat').value   = item.cat;
   document.getElementById('e-qty').value   = item.qty;
   if(item.frozen) {
@@ -622,6 +634,7 @@ async function saveEditItem() {
   const year  = document.getElementById('e-frozen-year').value;
   item.name        = document.getElementById('e-name').value.trim();
   item.size        = document.getElementById('e-size').value.trim();
+  item.note        = document.getElementById('e-note').value.trim();
   item.cat         = document.getElementById('e-cat').value;
   item.qty         = parseInt(document.getElementById('e-qty').value)||0;
   item.frozen      = `${year}-${month}-01`;
