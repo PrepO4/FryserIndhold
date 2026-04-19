@@ -161,7 +161,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
             <option value="groent">🥦 Grøntsager</option>
-            <option value="baer">🍓 Bær</option>
+            <option value="baer">🍓 Bær/Frugt</option>
             <option value="broed">🍞 Brød/Bagværk</option>
             <option value="faerdig">🍲 Færdigretter</option>
             <option value="sauce">🫙 Sauce/fond</option>
@@ -222,7 +222,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="fbtn" onclick="setFilter('fisk',this)">Fisk</button>
     <button class="fbtn" onclick="setFilter('mejeri',this)">Mejeri</button>
     <button class="fbtn" onclick="setFilter('groent',this)">Grøntsager</button>
-    <button class="fbtn" onclick="setFilter('baer',this)">Bær</button>
+    <button class="fbtn" onclick="setFilter('baer',this)">Bær/Frugt</button>
     <button class="fbtn" onclick="setFilter('broed',this)">Brød</button>
     <button class="fbtn" onclick="setFilter('faerdig',this)">Færdigretter</button>
     <button class="fbtn" onclick="setFilter('sauce',this)">Sauce/fond</button>
@@ -256,7 +256,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
             <option value="groent">🥦 Grøntsager</option>
-            <option value="baer">🍓 Bær</option>
+            <option value="baer">🍓 Bær/Frugt</option>
             <option value="broed">🍞 Brød/Bagværk</option>
             <option value="faerdig">🍲 Færdigretter</option>
             <option value="sauce">🫙 Sauce/fond</option>
@@ -587,7 +587,7 @@ function render() {
 }
 
 function catLabel(cat){
-  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',baer:'Bær',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
+  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',baer:'Bær/Frugt',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
 }
 function openAddForExisting(name, size, cat) {
   openManualForm(name, size, cat);
