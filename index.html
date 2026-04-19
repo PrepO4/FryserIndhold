@@ -421,8 +421,9 @@ function resetForm() {
 function openManualForm(name='', size='', cat='koed') {
   stopCamera();
   capturedB64 = null;
-  document.getElementById('preview-img').src = '';
-  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('analyzing-row').style.display = 'none';
+  document.getElementById('preview-wrap').style.display = 'block';
   resetForm();
   document.getElementById('f-name').value = name;
   document.getElementById('f-size').value = size;
@@ -434,6 +435,7 @@ function closeForm() {
   stopCamera();
   document.getElementById('add-form').classList.remove('open');
   document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('preview-img').style.display = '';
   capturedB64 = null;
 }
 
