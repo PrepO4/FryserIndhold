@@ -384,7 +384,7 @@ async function analyzeImage(b64) {
     const text = data.content?.[0]?.text || '';
     let result;
     try { result = JSON.parse(text.replace(/```json|```/g,'').trim()); }
-    catch { const m=text.match(/\{[\s\S]*?\}/); result = m ? JSON.parse(m[0]) : {}; }
+    catch(e2) { const m=text.match(/\{[\s\S]*?\}/); result = m ? JSON.parse(m[0]) : {}; }
     row.style.display = 'none';
     if(result.name) document.getElementById('f-name').value = result.name;
     if(result.size) document.getElementById('f-size').value = result.size;
