@@ -161,6 +161,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="koed">🥩 Kød</option>
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
+            <option value="paalaeg">🥪 Pålæg</option>
             <option value="groent">🥦 Grøntsager</option>
             <option value="baer">🍓 Bær/Frugt</option>
             <option value="broed">🍞 Brød/Bagværk</option>
@@ -226,6 +227,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="fbtn" onclick="setFilter('koed',this)">Kød</button>
     <button class="fbtn" onclick="setFilter('fisk',this)">Fisk</button>
     <button class="fbtn" onclick="setFilter('mejeri',this)">Mejeri</button>
+    <button class="fbtn" onclick="setFilter('paalaeg',this)">Pålæg</button>
     <button class="fbtn" onclick="setFilter('groent',this)">Grøntsager</button>
     <button class="fbtn" onclick="setFilter('baer',this)">Bær/Frugt</button>
     <button class="fbtn" onclick="setFilter('broed',this)">Brød</button>
@@ -260,6 +262,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="koed">🥩 Kød</option>
             <option value="fisk">🐟 Fisk/skaldyr</option>
             <option value="mejeri">🥛 Mejeri</option>
+            <option value="paalaeg">🥪 Pålæg</option>
             <option value="groent">🥦 Grøntsager</option>
             <option value="baer">🍓 Bær/Frugt</option>
             <option value="broed">🍞 Brød/Bagværk</option>
@@ -305,7 +308,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 <script>
 const BIN_KEY = '$2a$10$7mS4BGLl5vz4LSSfIaylCu3zwYJ3qRL5ZWtnTyuFsXu1mIpLabzMG';
 const BASE = 'https://api.jsonbin.io/v3';
-const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',groent:'🥦',baer:'🍓',broed:'🍞',faerdig:'🍲',sauce:'🫙',is:'🍦',andet:'📦'};
+const EMOJIS = {koed:'🥩',fisk:'🐟',mejeri:'🥛',paalaeg:'🥪',groent:'🥦',baer:'🍓',broed:'🍞',faerdig:'🍲',sauce:'🫙',is:'🍦',andet:'📦'};
 const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
 
 let items = [], filter = 'all', sortBy = 'default', searchQuery = '';
@@ -410,6 +413,7 @@ function guessCat(name, aiCat) {
   const n = name.toLowerCase();
   if(/kylling|bøf|kød|hakke|pølse|flæsk|svin|lam|and|kalv|bacon|ribeye|steak|kotelette/.test(n)) return 'koed';
   if(/fisk|laks|torsk|tun|reje|skaldyr|hummer|krab|makrel|sild/.test(n)) return 'fisk';
+  if(/pålæg|leverpostej|skinke|salami|spegepølse|rullepølse|hamburgerryg/.test(n)) return 'paalaeg';
   if(/mælk|fløde|smør|ost|yoghurt|skyr/.test(n)) return 'mejeri';
   if(/grønt|spinat|ært|bønne|broccoli|blomkål|gulerod|løg|kartoffel|majs/.test(n)) return 'groent';
   if(/brød|bolle|bagel|croissant|rugbrød/.test(n)) return 'broed';
@@ -417,7 +421,7 @@ function guessCat(name, aiCat) {
   if(/sauce|fond|suppe|bouillon|marinade/.test(n)) return 'sauce';
   if(/ret|lasagne|pizza|gratin|færdig/.test(n)) return 'faerdig';
   // Forsøg med AI-kategori som fallback
-  const map = {koed:'koed',fisk:'fisk',mejeri:'mejeri',groent:'groent',broed:'broed',sauce:'sauce',is:'is',faerdig:'faerdig',paaleg:'koed',konserves:'faerdig',mel:'broed',olie:'sauce',drikke:'andet'};
+  const map = {koed:'koed',fisk:'fisk',mejeri:'mejeri',groent:'groent',broed:'broed',sauce:'sauce',is:'is',faerdig:'faerdig',paaleg:'paalaeg',paalaeg:'paalaeg',konserves:'faerdig',mel:'broed',olie:'sauce',drikke:'andet'};
   return map[aiCat] || 'andet';
 }
 
@@ -598,7 +602,7 @@ function render() {
 }
 
 function catLabel(cat){
-  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',groent:'Grøntsager',baer:'Bær/Frugt',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
+  return {koed:'Kød',fisk:'Fisk/skaldyr',mejeri:'Mejeri',paalaeg:'Pålæg',groent:'Grøntsager',baer:'Bær/Frugt',broed:'Brød/Bagværk',faerdig:'Færdigretter',sauce:'Sauce/fond',is:'Is/Dessert',andet:'Andet'}[cat]||cat;
 }
 function openAddForExisting(name, size, cat) {
   openManualForm(name, size, cat);
